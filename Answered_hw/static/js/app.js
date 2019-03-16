@@ -1,7 +1,4 @@
 function buildMetadata(sample) {
-
-  // @TODO: Complete the following function that builds the metadata panel
-
   // Use `d3.json` to fetch the metadata for a sample
     // Use d3 to select the panel with id of `#sample-metadata`
   let selectedOption = d3.select("#selDataset");
@@ -13,7 +10,7 @@ function buildMetadata(sample) {
     let myTable = metadataContainer.append('table').attr('class','table-responsive').append('tbody').attr('class','table-striped').append("thead").attr("class", 'thead-dark');
     Object.entries(response).forEach((valueArray) => {
       let row = myTable.append('tr');
-      row.append('td').text(`- ${valueArray[0]}`);
+      row.append('td').text(`${valueArray[0]}`);
       row.append('td').text(` : ${valueArray[1]}`);
     });
 
@@ -25,11 +22,46 @@ function buildMetadata(sample) {
     // buildGauge(data.WFREQ);
 }
 
+function buildPieChart(response){
+  // which are the top ten? The first ten? The ones with the highest sample_value?
+  let trace = {
+    "labels": (response["otu_ids"].map( data => data)).slice(0,9),
+    "values": (response["sample_values"].map( data => data)).slice(0,9),
+    "hovertext": (response["otu_labels"].map( data => data)).slice(0,9),
+    "type" : "pie"
+  };
+
+  let data = [trace];
+
+  Plotly.newPlot("pie", data);
+}
+
+function buildBubbleChart(response){
+  let trace = {
+    x: response["otu_ids"].map(data => data),
+    y: response["sample_values"].map(data => data),
+    text : response["otu_labels"].map(data => data),
+    mode: 'markers',
+    marker: {
+      size: response["sample_values"].map(data => data),
+      color: response["otu_ids"].map(data => data)
+    }
+  };
+
+  let data =[trace];
+
+  Plotly.newPlot("bubble", data);
+}
+
+
 function buildCharts(sample) {
 
-  // @TODO: Use `d3.json` to fetch the sample data for the plots
-
-    // @TODO: Build a Bubble Chart using the sample data
+  let url = `/samples/${sample}`;
+  d3.json(url).then( response => {
+    console.log(response);
+    buildPieChart(response);
+    buildBubbleChart(response);
+  });
 
     // @TODO: Build a Pie Chart
     // HINT: You will need to use slice() to grab the top 10 sample_values,
